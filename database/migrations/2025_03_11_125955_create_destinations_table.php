@@ -11,8 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('destinations', function (Blueprint $table) {
+        Schema::create('destinations', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('itinerary_id')->constrained()->onDelete('cascade');
+            $table->string('name');
+            $table->string('lodging')->nullable();
+            $table->json('places_to_visit')->nullable();
+            $table->timestamps();
         });
     }
 
@@ -21,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::dropIfExists('destinations');
     }
 };

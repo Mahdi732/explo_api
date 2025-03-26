@@ -29,7 +29,10 @@ class UserController extends Controller
             'password' => Hash::make($request->password)
         ]);
 
+        $token = JWTAuth::fromUser($user);
+
         $response = [
+            'token' => $token,
             'user' => $user
         ];
 
