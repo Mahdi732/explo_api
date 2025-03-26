@@ -8,28 +8,21 @@ use Illuminate\Support\Facades\Auth;
 
 class FavoriteController extends Controller
 {
-    public function store($id){
+    public function store($id)
+    {
+        $itinerary = DB::table('itineraries')->find($id);
 
-        $itinerary = DB::table('itineraries')->where('id', $id)->exists();
-
-        if(!$itinerary){
-            return response([
-                'message' => "itinerary doesn't exist!"
-            ]);
+        if (!$itinerary) {
+            return response()->json(['message' => "Itinerary doesn't exist!"], 404);
         }
 
-        $is_exists = DB::table('favorites')->where('itineraries_id', $id)->where('user_id', Auth::id())->exists();
+        $favorite = Auth::user()->favorites()->firstOrCreate(['itineraries_id' => $id]);
 
-        if($is_exists){
-            return response([
-                'message' => "already added!"
-            ]);
+        if (!$favorite->wasRecentlyCreated) {
+            return response()->json(['message' => "Already added!"], 200);
         }
 
-        $favori = Auth::user()->favorites()->create(['itineraries_id' => $id]);
-
-        return response([
-            'message' => 'the itinerary added to you favorite list successfuly'
-        ]);
+        return response()->json(['message' => 'The itinerary was successfully added to your favorite list.'], 201);
     }
 }
+

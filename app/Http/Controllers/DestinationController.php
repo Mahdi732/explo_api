@@ -11,28 +11,33 @@ class DestinationController extends Controller
 {
     public function store(Request $request, $itineraryId)
     {
-        $itinerary = itinerary::where('user_id', Auth::id())->find($itineraryId);
+        try {
+            $itinerary = Itinerary::where('user_id', Auth::id())->findOrFail($itineraryId);
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'lodging' => 'nullable|string',
-            'places_to_visit' => 'nullable|array',
-        ]);
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'lodging' => 'nullable|string',
+                'places_to_visit' => 'nullable|array',
+            ]);
 
-        $destination = $itinerary->destinations()->create($validated);
+            $destination = $itinerary->destinations()->create($validated);
 
-        return response()->json($destination, 201);
+            return response()->json($destination, 201);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Itinerary not found or invalid data'], 400);
+        }
     }
 
     public function destroy($id)
     {
         $destination = Destination::find($id);
-        if ($destination->itinerary->user_id !== Auth::id()) {
-            return response()->json(['message' => "Unauthorized"], 403);
+
+        if (!$destination || optional($destination->itinerary)->user_id !== Auth::id()) {
+            return response()->json(['message' => "Unauthorized or destination not found"], 403);
         }
 
         $destination->delete();
 
-        return response()->json(['message' => 'Destination deleted']);
+        return response()->json(['message' => 'Destination deleted successfully']);
     }
 }
